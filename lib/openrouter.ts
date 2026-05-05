@@ -23,17 +23,21 @@ export async function explainSpend(ws: WorkspaceSummary, forecast: Forecast): Pr
         model: MODEL,
         messages: [
           {
-            role: "system",
+            role: "user",
             content:
-              "You are a FinOps analyst. Explain cloud spend in 2–3 short sentences, citing specific resources and dollar amounts. Plain English. No markdown headings.",
+              "You are a FinOps analyst. Explain cloud spend in 2–3 short sentences, citing specific resources and dollar amounts. Plain English, no markdown headings.\n\n" +
+              prompt,
           },
-          { role: "user", content: prompt },
         ],
         temperature: 0.3,
         max_tokens: 280,
       }),
     });
-    if (!r.ok) throw new Error(`OpenRouter ${r.status}`);
+    if (!r.ok) {
+      const body = await r.text().catch(() => "");
+      console.warn(`[openrouter] ${r.status} ${body.slice(0, 200)}`);
+      throw new Error(`OpenRouter ${r.status}`);
+    }
     const data = await r.json();
     const text = data?.choices?.[0]?.message?.content?.trim();
     return text || mockExplanation(ws, forecast);

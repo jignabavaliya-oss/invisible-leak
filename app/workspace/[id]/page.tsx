@@ -6,8 +6,11 @@ import { StatTile } from "@/components/StatTile";
 import { LeakTable } from "@/components/LeakTable";
 import { Explainer } from "@/components/Explainer";
 
-export default function WorkspaceDetail({ params }: { params: { id: string } }) {
-  const ws = summarize().find((w) => w.workspace.id === params.id);
+export const dynamic = "force-dynamic";
+
+export default async function WorkspaceDetail({ params }: { params: { id: string } }) {
+  const all = await summarize();
+  const ws = all.find((w) => w.workspace.id === params.id);
   if (!ws) return notFound();
   const forecast = forecastWorkspace(ws);
 
