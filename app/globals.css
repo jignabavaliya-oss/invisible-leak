@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: dark; }
+html, body { background: #0b0d12; color: #e6e8ee; }
+
+.card {
+  @apply bg-panel border border-line rounded-2xl p-5 transition;
+}
+.card:hover { @apply border-white/20; }
+.badge {
+  @apply inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full;
+}
+.badge-leak { @apply bg-leak/15 text-leak border border-leak/30; }
+.badge-ok { @apply bg-ok/15 text-ok border border-ok/30; }
+.badge-warn { @apply bg-warn/15 text-warn border border-warn/30; }
+.btn {
+  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+         bg-white text-ink hover:bg-white/90 transition;
+}
+.btn-ghost {
+  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm
+         border border-line text-white/80 hover:text-white hover:border-white/30 transition;
+}
+.kbd {
+  @apply text-[11px] px-1.5 py-0.5 rounded border border-line bg-black/30 text-white/60;
+}
+.bar {
+  @apply h-2 rounded-full bg-line overflow-hidden;
+}
+.bar > span { @apply block h-full; }
