@@ -1,10 +1,12 @@
 name = "invisible-leak-poller"
 main = "poll-billing.ts"
 compatibility_date = "2025-01-01"
+workers_dev = false
 
 [triggers]
 crons = ["0 6 * * *"]
 
+[vars]
+SUPABASE_URL = "https://gwahrkmzmtuankfwsaxz.supabase.co"
+
 # Set with: wrangler secret put SUPABASE_SERVICE_KEY
-# [vars]
-# SUPABASE_URL = "https://xxxx.supabase.co"
