@@ -9,7 +9,7 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("workspace");
   if (!id) return NextResponse.json({ error: "workspace required" }, { status: 400 });
-  const ws = summarize().find((w) => w.workspace.id === id);
+  const ws = (await summarize()).find((w) => w.workspace.id === id);
   if (!ws) return NextResponse.json({ error: "not found" }, { status: 404 });
   const forecast = forecastWorkspace(ws);
   const summary = await explainSpend(ws, forecast);

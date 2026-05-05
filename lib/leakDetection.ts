@@ -1,5 +1,5 @@
 import type { LineItem, Workspace } from "./types";
-import { LINE_ITEMS, VELOCITY, WORKSPACES } from "./mockData";
+import { loadLineItems, loadWorkspaces, loadVelocity } from "./dataSource";
 
 export type LeakReason =
   | "unattached_volume"
@@ -79,21 +79,26 @@ export interface WorkspaceSummary {
   budget_pct: number;
   leak_count: number;
   leak_amount: number;
-  efficiency: number; // 0..100
+  efficiency: number;
   items: LineItem[];
   leaks: Leak[];
   velocity: { prs_14d: number; deploys_14d: number };
 }
 
-export function summarize(): WorkspaceSummary[] {
-  const enriched = LINE_ITEMS.map((i) => ({ ...i, inferred_workspace: inferWorkspace(i) }));
-  return WORKSPACES.map((ws) => {
-    const items = enriched.filter((i) => (i.workspace ?? i.inferred_workspace) === ws.id);
-    const spend_mtd = round(items.reduce((s, i) => s + i.cost_usd, 0));
-    const daily_burn = round(items.reduce((s, i) => s + i.daily_cost_usd, 0));
-    const leaks = items.map(detectLeak).filter((x): x is Leak => !!x);
+export async function summarize(): Promise<WorkspaceSummary[]> {
+  const [workspaces, items, velocity] = await Promise.all([
+    loadWorkspaces(),
+    loadLineItems(),
+    Promise.resolve(loadVelocity()),
+  ]);
+  const enriched = items.map((i) => ({ ...i, inferred_workspace: inferWorkspace(i) }));
+  return workspaces.map((ws) => {
+    const wsItems = enriched.filter((i) => (i.workspace ?? i.inferred_workspace) === ws.id);
+    const spend_mtd = round(wsItems.reduce((s, i) => s + i.cost_usd, 0));
+    const daily_burn = round(wsItems.reduce((s, i) => s + i.daily_cost_usd, 0));
+    const leaks = wsItems.map(detectLeak).filter((x): x is Leak => !!x);
     const leak_amount = round(leaks.reduce((s, l) => s + l.monthly_waste_usd, 0));
-    const efficiency = items.length === 0 ? 100 :
+    const efficiency = wsItems.length === 0 ? 100 :
       Math.max(0, Math.round(100 - (leak_amount / Math.max(spend_mtd, 1)) * 100));
     return {
       workspace: ws,
@@ -104,15 +109,15 @@ export function summarize(): WorkspaceSummary[] {
       leak_count: leaks.length,
       leak_amount,
       efficiency,
-      items,
+      items: wsItems,
       leaks,
-      velocity: VELOCITY[ws.id] ?? { prs_14d: 0, deploys_14d: 0 },
+      velocity: velocity[ws.id] ?? { prs_14d: 0, deploys_14d: 0 },
     };
   });
 }
 
-export function totals() {
-  const s = summarize();
+export async function totals() {
+  const s = await summarize();
   return {
     total_spend: round(s.reduce((a, w) => a + w.spend_mtd, 0)),
     total_leak: round(s.reduce((a, w) => a + w.leak_amount, 0)),

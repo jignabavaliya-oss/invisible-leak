@@ -2,9 +2,11 @@ import { summarize, totals } from "@/lib/leakDetection";
 import { WorkspaceCard } from "@/components/WorkspaceCard";
 import { StatTile } from "@/components/StatTile";
 
-export default function DashboardPage() {
-  const t = totals();
-  const ws = summarize().sort((a, b) => b.leak_amount - a.leak_amount);
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const [t, wsAll] = await Promise.all([totals(), summarize()]);
+  const ws = wsAll.sort((a, b) => b.leak_amount - a.leak_amount);
 
   return (
     <main>

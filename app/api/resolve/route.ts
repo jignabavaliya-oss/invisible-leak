@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   const id = body?.resource_id as string | undefined;
   if (!id) return NextResponse.json({ error: "resource_id required" }, { status: 400 });
 
-  for (const ws of summarize()) {
+  for (const ws of await summarize()) {
     const leak = ws.leaks.find((l) => l.item.resource_id === id);
     if (leak) {
       return NextResponse.json({
